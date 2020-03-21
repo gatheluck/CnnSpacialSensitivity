@@ -16,7 +16,7 @@ def shuffle(x:torch.tensor, shuffle_dim:int, num_partition:int) -> torch.tensor:
     Args
     - x:             input tensor. its size should be (h,w), (c,h,w), (b,c,h,w).
     - shuffle_dim:   dimension which applies shuffle operation.
-    - num_partition: number of num_partition.
+    - num_partition: number of partition.
     
     Return: shuffled tensor.
     """
