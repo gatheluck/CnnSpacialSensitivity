@@ -54,4 +54,4 @@ if __name__ == '__main__':
                 x_list.append(x[1])
                 break
 
-    torchvision.utils.save_image(torch.stack(x_list, dim=0), "../logs/horizontal_shuffle.png", nrow=5, padding=1)
+    torchvision.utils.save_image(torch.stack(x_list, dim=0), "../logs/patch_shuffle.png", nrow=5, padding=1)
