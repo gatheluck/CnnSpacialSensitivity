@@ -22,7 +22,18 @@ Note that I run the code with Ubuntu 18, Pytorch 1.4.0, CUDA 10.1.
 
 ### Patch Suffling
 
-coming soon
+The class `PatchShuffle` in `spatial_sensitivity/patch_shuffle.py` applies Patch Shuffle transform to input tensor. One can call `PatchShuffle()` same as functions in `torchvision.transforms`.
+
+Following sample code save some Patch Shuffled tensor as image under `logs/patch_shuffle.png`.
+
+```
+cd spatial_sensitivity
+python patch_shuffle.py
+```
+
+The saved image should be like follows.
+
+<img src="samples/patch_shuffle.png" height="300px">
 
 ### Masking
 
