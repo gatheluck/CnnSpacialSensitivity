@@ -1,4 +1,4 @@
-# CNN Spatial Features
+# CNN Spatial Sensitivity
 
 This is an unofficial pytorch implementation of Patch Suffling experiment  conducted in [Interpreting Adversarially Trained Convolutional Neural Networks [Zhang+, ICML2019]](https://arxiv.org/abs/1905.09797) and Masking experiment performed in [Approximating CNNs with Bag-of-local-Features models works surprisingly well on ImageNet [Brendel+, ICLR2019]](https://arxiv.org/abs/1904.00760)
 
