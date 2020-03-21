@@ -34,7 +34,7 @@ from spatial_sensitivity.patch_shuffle import PatchShuffle
 @click.option('-N', '--batch_size', type=int, default=1024)
 @click.option('--num_samples', type=int, default=-1)
 # patch shuffle
-@click.option('--max_num_partition', type=int, default=8)
+@click.option('--max_num_devide', type=int, default=10)
 @click.option('-k', '--top_k', type=int, default=1)
 # log
 @click.option('-l', '--log_dir', type=str, required=True)
@@ -51,8 +51,7 @@ def eval(**kwargs):
     os.makedirs(FLAGS.log_dir, exist_ok=True)
     FLAGS.dump(path=os.path.join(FLAGS.log_dir, 'flags{}.json'.format(FLAGS.suffix)))
 
-    assert FLAGS.h_map_size%2==1, 'h_map_size should be odd because of symmetry'
-    assert FLAGS.w_map_size%2==1, 'w_map_size should be odd because of symmetry'
+    assert FLAGS.max_num_devide>=1
 
     # dataset
     dataset_builder = DatasetBuilder(name=FLAGS.dataset, root_path=FLAGS.dataroot)
@@ -65,40 +64,40 @@ def eval(**kwargs):
 
     # for logging
     acc_dict = {}
-	images_list = []
+    images_list = []
 
-    for num_partition in tqdm.tqdm(range(0, FLAGS.max_num_partition+1)):
-		# build Patch Shuffled dataset
-		patch_shuffle_transform = PatchShuffle(num_partition, num_partition)
-		dataset = dataset_builder(train=False, normalize=True, optional_transform=[patch_shuffle_transform])
-		if FLAGS.num_samples != -1:
-			num_samples = min(FLAGS.num_samples, len(dataset))
-			indices = [i for i in range(num_samples)]
-			dataset = torch.utils.data.Subset(dataset, indices)
-		loader = torch.utils.data.DataLoader(dataset, batch_size=FLAGS.batch_size, shuffle=False, num_workers=FLAGS.num_workers, pin_memory=True)
+    for num_devide in tqdm.tqdm(range(1, FLAGS.max_num_devide+1)):
+        # build Patch Shuffled dataset
+        patch_shuffle_transform = PatchShuffle(num_devide, num_devide)
+        dataset = dataset_builder(train=False, normalize=True, optional_transform=[patch_shuffle_transform])
+        if FLAGS.num_samples != -1:
+            num_samples = min(FLAGS.num_samples, len(dataset))
+            indices = [i for i in range(num_samples)]
+            dataset = torch.utils.data.Subset(dataset, indices)
+        loader = torch.utils.data.DataLoader(dataset, batch_size=FLAGS.batch_size, shuffle=False, num_workers=FLAGS.num_workers, pin_memory=True)
 
-		with torch.autograd.no_grad():
-			num_correct = 0.0
-			for i, (x,t) in enumerate(loader):
-				model.eval()
-				x = x.to('cuda', non_blocking=True)
-				t = t.to('cuda', non_blocking=True)
+        with torch.autograd.no_grad():
+            num_correct = 0.0
+            for i, (x,t) in enumerate(loader):
+                model.eval()
+                x = x.to('cuda', non_blocking=True)
+                t = t.to('cuda', non_blocking=True)
 
-				model.zero_grad()
-				logit = model(x)
-				num_correct += get_num_correct(logit, t, topk=FLAGS.top_k)
+                model.zero_grad()
+                logit = model(x)
+                num_correct += get_num_correct(logit, t, topk=FLAGS.top_k)
 
-				if i==0: images_list.append(x[10])
-			
-			acc = num_correct / float(len(dataset))
-			key = '{%d}'.format(num_partition)
-			acc_dict[key] = acc
+                if i==0: images_list.append(x[10])
+            
+            acc = num_correct / float(len(dataset))
+            key = '{num_devide}'.format(num_devide=num_devide)
+            acc_dict[key] = acc
                 
         print(acc_dict)
 
     # logging
     torch.save(acc_dict, os.path.join(FLAGS.log_dir, 'patch_shuffle_acc_dict'+FLAGS.suffix+'.pth'))
-    torchvision.utils.save_image(torch.stack(images_list, dim=0), os.path.join(FLAGS.log_dir, 'example_images'+FLAGS.suffix+'.png'), nrow=FLAGS.w_map_size)
+    torchvision.utils.save_image(torch.stack(images_list, dim=0), os.path.join(FLAGS.log_dir, 'example_images'+FLAGS.suffix+'.png'), nrow=FLAGS.max_num_devide)
     # sns.heatmap(error_matrix.numpy(), vmin=0.0, vmax=1.0, cmap="jet", cbar=True, xticklabels=False, yticklabels=False)
     # plt.savefig(os.path.join(FLAGS.log_dir, 'fhmap'+FLAGS.suffix+'.png'))
     
