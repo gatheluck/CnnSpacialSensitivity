@@ -21,6 +21,7 @@ from misc.logger import Logger
 from misc.metric import get_num_correct
 from misc.data import DatasetBuilder
 from misc.model import ModelBuilder
+from misc.plot import plot
 from spatial_sensitivity.patch_shuffle import PatchShuffle
 
 # options
@@ -111,9 +112,7 @@ def eval(**kwargs):
     # save data
     torch.save(acc_dict, os.path.join(FLAGS.log_dir, 'patch_shuffle_acc_dict'+FLAGS.suffix+'.pth'))
     torchvision.utils.save_image(torch.stack(images_list, dim=0), os.path.join(FLAGS.log_dir, 'example_images'+FLAGS.suffix+'.png'), nrow=FLAGS.max_num_devide)
-    # sns.heatmap(error_matrix.numpy(), vmin=0.0, vmax=1.0, cmap="jet", cbar=True, xticklabels=False, yticklabels=False)
-    # plt.savefig(os.path.join(FLAGS.log_dir, 'fhmap'+FLAGS.suffix+'.png'))
-    
+    plot(csv_path=log_path, x='num_devide', y='accuracy', log_path=os.path.join(FLAGS.log_dir, 'plot.png'), save=True)
 
 if __name__ == '__main__':
     main()
