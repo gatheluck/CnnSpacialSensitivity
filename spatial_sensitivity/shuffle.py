@@ -45,8 +45,6 @@ def shuffle(x:torch.tensor, shuffle_dim:int, num_partition:int) -> torch.tensor:
     return torch.cat(devidied_tensor_parts, dim=shuffle_dim)
     
 if __name__ == '__main__':
-    import tqdm
-
     transform = torchvision.transforms.Compose([
                     torchvision.transforms.ToTensor(),
                 ])
