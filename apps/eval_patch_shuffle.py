@@ -7,6 +7,7 @@ sys.path.append(base)
 import click
 import tqdm
 import random
+import collections
 
 import numpy as np
 import torch
@@ -16,6 +17,7 @@ import seaborn as sns
 
 from misc.flag_holder import FlagHolder
 from misc.io import load_model
+from misc.logger import Logger
 from misc.metric import get_num_correct
 from misc.data import DatasetBuilder
 from misc.model import ModelBuilder
@@ -53,6 +55,10 @@ def eval(**kwargs):
 
     assert FLAGS.max_num_devide>=1
 
+    # logging
+    log_path = os.path.join(FLAGS.log_dir, 'log.csv')
+    logger   = Logger(path=log_path, mode='test')
+
     # dataset
     dataset_builder = DatasetBuilder(name=FLAGS.dataset, root_path=FLAGS.dataroot)
 
@@ -67,6 +73,9 @@ def eval(**kwargs):
     images_list = []
 
     for num_devide in tqdm.tqdm(range(1, FLAGS.max_num_devide+1)):
+        log_dict = collections.OrderedDict()
+        for k,v in FLAGS._dict.items(): log_dict[k] = v
+
         # build Patch Shuffled dataset
         patch_shuffle_transform = PatchShuffle(num_devide, num_devide)
         dataset = dataset_builder(train=False, normalize=True, optional_transform=[patch_shuffle_transform])
@@ -89,13 +98,17 @@ def eval(**kwargs):
 
                 if i==0: images_list.append(x[10])
             
-            acc = num_correct / float(len(dataset))
-            key = '{num_devide}'.format(num_devide=num_devide)
-            acc_dict[key] = acc
+        acc = num_correct / float(len(dataset))
+        key = '{num_devide}'.format(num_devide=num_devide)
+        acc_dict[key] = acc
+
+        log_dict['num_devide'] = num_devide
+        log_dict['accuracy']   = acc
+        logger.log(log_dict)
                 
         print(acc_dict)
 
-    # logging
+    # save data
     torch.save(acc_dict, os.path.join(FLAGS.log_dir, 'patch_shuffle_acc_dict'+FLAGS.suffix+'.pth'))
     torchvision.utils.save_image(torch.stack(images_list, dim=0), os.path.join(FLAGS.log_dir, 'example_images'+FLAGS.suffix+'.png'), nrow=FLAGS.max_num_devide)
     # sns.heatmap(error_matrix.numpy(), vmin=0.0, vmax=1.0, cmap="jet", cbar=True, xticklabels=False, yticklabels=False)
