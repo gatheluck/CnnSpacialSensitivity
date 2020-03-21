@@ -11,27 +11,27 @@ import torchvision
 from spatial_sensitivity.shuffle import shuffle
 
 class PatchShuffle(object):
-    def __init__(self, num_h_partition:int, num_w_partition:int):
+    def __init__(self, num_h_devide:int, num_w_devide:int):
         """
         apply Patch Shuffle to input tensor along height and width dimension.   
 
         Args
-        - num_h_partition: number of partition about hight dimension
-        - num_w_partition: number of partition about width dimension 
+        - num_h_devide: number of devision about hight dimension
+        - num_w_devide: number of devision about width dimension 
         """
-        assert num_h_partition >= 0
-        assert num_w_partition >= 0
-        self.num_h_partition = num_h_partition
-        self.num_w_partition = num_w_partition
+        assert num_h_devide >= 0
+        assert num_w_devide >= 0
+        self.num_h_devide = num_h_devide
+        self.num_w_devide = num_w_devide
 
     def __call__(self, x:torch.tensor):
         c, h, w = x.shape[-3:]
         assert c == 3
-        assert h >= self.num_h_partition and h>0
-        assert w >= self.num_w_partition and w>0
+        assert h >= self.num_h_devide and h>0
+        assert w >= self.num_w_devide and w>0
 
-        x = shuffle(x, -2, self.num_h_partition)
-        x = shuffle(x, -1, self.num_w_partition)
+        x = shuffle(x, -2, self.num_h_devide)
+        x = shuffle(x, -1, self.num_w_devide)
 
         return x
 
@@ -40,8 +40,8 @@ if __name__ == '__main__':
 
     x_list=[]
     os.makedirs('../logs', exist_ok=True)
-    for h_idx in tqdm.tqdm(range(5)):
-        for w_idx in range(5):
+    for h_idx in tqdm.tqdm(range(1,6)):
+        for w_idx in range(1,6):
             transform = torchvision.transforms.Compose([
                             torchvision.transforms.ToTensor(),
                             PatchShuffle(h_idx,w_idx),
