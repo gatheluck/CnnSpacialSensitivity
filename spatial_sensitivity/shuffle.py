@@ -20,8 +20,10 @@ def shuffle(x:torch.tensor, shuffle_dim:int, num_partition:int) -> torch.tensor:
     
     Return: shuffled tensor.
     """
+    shuffle_dim = shuffle_dim if shuffle_dim>=0 else len(x.size())+shuffle_dim # make positive number
+
     assert 2 <= len(x.size()) < 5
-    assert 0 <= shuffle_dim    < len(x.size())
+    assert 0 <= shuffle_dim   < len(x.size())
     assert 0 <= num_partition < min(x.size(-1), x.size(-2)) 
 
     if num_partition == 0: return x
