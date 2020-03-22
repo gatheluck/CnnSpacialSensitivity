@@ -20,6 +20,8 @@ from misc.plot import plot
 @click.option('-t', '--target_dir', type=str, required=True)
 @click.option('-x', type=str, required=True)
 @click.option('-y', type=str, default='')
+@click.option('-l', '--log_path', type=str, default='', help='path of log')
+@click.option('-s', '--save', is_flag=True, default=False, help='save results')
 
 def main(**kwargs):
     plot_patch_shuffle(**kwargs)
@@ -27,7 +29,7 @@ def main(**kwargs):
 def plot_patch_shuffle(**kwargs):
     FLAGS = FlagHolder()
     FLAGS.initialize(**kwargs)
-    FLAGS.summary()
+    # FLAGS.summary()
 
     target_path = os.path.join(FLAGS.target_dir, '**/*.csv')
     csv_paths   = sorted(glob.glob(target_path, recursive=True), key=lambda x: os.path.basename(x))
@@ -41,6 +43,8 @@ def plot_patch_shuffle(**kwargs):
         else:
             df = pd.concat([df, pd.read_csv(csv_path)], axis=0)
       
+    print(df)
+    plot(dataframe=df, x='num_devide', y='accuracy', log_path=os.path.join(FLAGS.log_path, 'plot_path_shuffle.png'), save=FLAGS.save)
 
     #     log_dir = os.path.join(os.path.dirname(weight_path), 'plot')
     #     os.makedirs(log_dir, exist_ok=True)
