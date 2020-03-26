@@ -44,7 +44,7 @@ def plot_patch_shuffle(**kwargs):
             df = pd.concat([df, pd.read_csv(csv_path)], axis=0)
       
     print(df)
-    plot(dataframe=df, x='num_devide', y='accuracy', log_path=os.path.join(FLAGS.log_path, 'plot_path_shuffle.png'), save=FLAGS.save)
+    plot(dataframe=df, x='num_devide', y='accuracy', log_path=os.path.join(FLAGS.log_path, 'plot_patch_shuffle.png'), save=FLAGS.save)
 
     #     log_dir = os.path.join(os.path.dirname(weight_path), 'plot')
     #     os.makedirs(log_dir, exist_ok=True)
