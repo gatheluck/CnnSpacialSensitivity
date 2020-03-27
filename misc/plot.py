@@ -15,6 +15,7 @@ from misc.flag_holder import FlagHolder
 @click.option('-p', '--csv_path', type=str, required=True)
 @click.option('-x', type=str, required=True)
 @click.option('-y', type=str, default='')
+@click.option('-h', '--hue', type=str, default=None, help='name of grouping variable that will produce lines with different colors')
 @click.option('-l', '--log_path', type=str, default='', help='path of log')
 @click.option('-s', '--save', is_flag=True, default=False, help='save results')
 
@@ -68,7 +69,7 @@ def plot(**kwargs):
     fig = plt.figure()
     ax = fig.subplots()
     if FLAGS.y == '': raise ValueError('please specify "y"')
-    sns.lineplot(x=FLAGS.x, y=FLAGS.y, ci="sd", data=df)
+    sns.lineplot(x=FLAGS.x, y=FLAGS.y, hue=FLAGS.hue, ci="sd", data=df)
 
     if FLAGS.save:
         plt.close()
