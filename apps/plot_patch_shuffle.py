@@ -20,6 +20,7 @@ from misc.plot import plot
 @click.option('-t', '--target_dir', type=str, required=True)
 @click.option('-x', type=str, required=True)
 @click.option('-y', type=str, default='')
+@click.option('-h', '--hue', type=str, default=None, help='name of grouping variable that will produce lines with different colors')
 @click.option('-l', '--log_path', type=str, default='', help='path of log')
 @click.option('-s', '--save', is_flag=True, default=False, help='save results')
 
@@ -44,7 +45,7 @@ def plot_patch_shuffle(**kwargs):
             df = pd.concat([df, pd.read_csv(csv_path)], axis=0)
       
     print(df)
-    plot(dataframe=df, x='num_devide', y='accuracy', log_path=os.path.join(FLAGS.log_path, 'plot_patch_shuffle.png'), save=FLAGS.save)
+    plot(dataframe=df, x='num_devide', y='accuracy', hue=FLAGS.hue, log_path=os.path.join(FLAGS.log_path, 'plot_patch_shuffle.png'), save=FLAGS.save)
 
     #     log_dir = os.path.join(os.path.dirname(weight_path), 'plot')
     #     os.makedirs(log_dir, exist_ok=True)
