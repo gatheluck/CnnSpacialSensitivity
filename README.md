@@ -54,7 +54,9 @@ cd apps
 python plot_patch_shuffle.py -t [TARGET_DIR] -l [DOG_DIR]  -s 
 ```
 
-will load all csv files under `TARGET_DIR` and illustrate single plot under `LOG_DIR/plot_patch_shuffle.png`. The saved image should be like follows.
+will load all csv files under `TARGET_DIR` and illustrate single plot under `LOG_DIR/plot_patch_shuffle.png`. 
+
+The saved image should be like follows.
 
 <img src="samples/plot_patch_shuffle.png" height="300px">
 
