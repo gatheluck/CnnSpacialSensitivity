@@ -30,48 +30,22 @@ def main(**kwargs):
 def plot_patch_shuffle(**kwargs):
     FLAGS = FlagHolder()
     FLAGS.initialize(**kwargs)
-    # FLAGS.summary()
 
     target_path = os.path.join(FLAGS.target_dir, '**/*.csv')
     csv_paths   = sorted(glob.glob(target_path, recursive=True), key=lambda x: os.path.basename(x))
 
-    print(csv_paths)
-
     df = None
     for csv_path in csv_paths:
+        new_df = pd.read_csv(csv_path)
+        legend = os.path.basename(new_df['weight'][0]).rstrip('_model.pth')
+        new_df['legend'] = legend
+
         if df is None:
-            df = pd.read_csv(csv_path)
+            df = new_df
         else:
-            df = pd.concat([df, pd.read_csv(csv_path)], axis=0)
+            df = pd.concat([df, new_df], axis=0)
       
-    print(df)
-    plot(dataframe=df, x='num_devide', y='accuracy', hue=FLAGS.hue, log_path=os.path.join(FLAGS.log_path, 'plot_patch_shuffle.png'), save=FLAGS.save)
-
-    #     log_dir = os.path.join(os.path.dirname(weight_path), 'plot')
-    #     os.makedirs(log_dir, exist_ok=True)
-
-    #     basename = os.path.basename(weight_path)
-    #     basename, _ = os.path.splitext(basename) 
-    #     log_path = os.path.join(log_dir, basename)+'.png'
-
-    #     cmd = 'python plot.py \
-    #         -t {target_dir} \
-    #         -x {x} \
-    #         -s \
-    #         -l {log_path}'.format(
-    #             target_dir=weight_path,
-    #             x=FLAGS.x,
-    #             log_path=log_path)
-
-    #     # add y
-    #     if FLAGS.y != '':
-    #         cmd += ' -y {y}'.format(y=FLAGS.y)
-
-    #     # add flag command
-    #     if FLAGS.plot_all:
-    #         cmd += ' --plot_all'
-
-    #     subprocess.run(cmd.split(), cwd=run_dir)
+    plot(dataframe=df, x='num_devide', y='accuracy', hue='legend', log_path=os.path.join(FLAGS.log_path, 'plot_patch_shuffle.png'), save=FLAGS.save)
 
 if __name__ == '__main__':
     main()
