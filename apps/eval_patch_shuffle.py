@@ -1,3 +1,4 @@
+import collections
 import os
 import sys
 
@@ -5,24 +6,19 @@ base = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
 sys.path.append(base)
 
 import click
-import tqdm
-import random
-import collections
-
-import numpy as np
 import torch
 import torchvision
-import matplotlib.pyplot as plt
-import seaborn as sns
+import tqdm
 
+from misc.data import DatasetBuilder
 from misc.flag_holder import FlagHolder
 from misc.io import load_model
 from misc.logger import Logger
 from misc.metric import get_num_correct
-from misc.data import DatasetBuilder
 from misc.model import ModelBuilder
 from misc.plot import plot
 from spatial_sensitivity.patch_shuffle import PatchShuffle
+
 
 # options
 @click.command()
@@ -42,10 +38,9 @@ from spatial_sensitivity.patch_shuffle import PatchShuffle
 # log
 @click.option('-l', '--log_dir', type=str, required=True)
 @click.option('-s', '--suffix', type=str, default='')
-
-
 def main(**kwargs):
     eval(**kwargs)
+
 
 def eval(**kwargs):
     FLAGS = FlagHolder()
@@ -54,28 +49,30 @@ def eval(**kwargs):
     os.makedirs(FLAGS.log_dir, exist_ok=True)
     FLAGS.dump(path=os.path.join(FLAGS.log_dir, 'flags{}.json'.format(FLAGS.suffix)))
 
-    assert FLAGS.max_num_devide>=1
+    assert FLAGS.max_num_devide >= 1
 
     # logging
-    log_path = os.path.join(FLAGS.log_dir, 'log.csv')
-    logger   = Logger(path=log_path, mode='test')
+    log_path = os.path.join(FLAGS.log_dir, os.path.join('pathch_shuffle_result' + FLAGS.suffix + '.csv'))
+    logger = Logger(path=log_path, mode='test')
 
     # dataset
     dataset_builder = DatasetBuilder(name=FLAGS.dataset, root_path=FLAGS.dataroot)
 
-    # model (load from checkpoint) 
+    # model (load from checkpoint)
     num_classes = dataset_builder.num_classes
     model = ModelBuilder(num_classes=num_classes, pretrained=False)[FLAGS.arch].cuda()
     load_model(model, FLAGS.weight)
-    if torch.cuda.device_count() > 1: model = torch.nn.DataParallel(model)
+    if torch.cuda.device_count() > 1:
+        model = torch.nn.DataParallel(model)
 
     # for logging
     acc_dict = {}
     images_list = []
 
-    for num_devide in tqdm.tqdm(range(1, FLAGS.max_num_devide+1)):
+    for num_devide in tqdm.tqdm(range(1, FLAGS.max_num_devide + 1)):
         log_dict = collections.OrderedDict()
-        for k,v in FLAGS._dict.items(): log_dict[k] = v
+        for k, v in FLAGS._dict.items():
+            log_dict[k] = v
 
         # build Patch Shuffled dataset
         patch_shuffle_transform = PatchShuffle(num_devide, num_devide)
@@ -88,7 +85,7 @@ def eval(**kwargs):
 
         with torch.autograd.no_grad():
             num_correct = 0.0
-            for i, (x,t) in enumerate(loader):
+            for i, (x, t) in enumerate(loader):
                 model.eval()
                 x = x.to('cuda', non_blocking=True)
                 t = t.to('cuda', non_blocking=True)
@@ -97,22 +94,23 @@ def eval(**kwargs):
                 logit = model(x)
                 num_correct += get_num_correct(logit, t, topk=FLAGS.top_k)
 
-                if i==0: images_list.append(x[10])
-            
+                if i == 0:
+                    images_list.append(x[10])
+
         acc = num_correct / float(len(dataset))
         key = '{num_devide}'.format(num_devide=num_devide)
         acc_dict[key] = acc
 
         log_dict['num_devide'] = num_devide
-        log_dict['accuracy']   = acc
+        log_dict['accuracy'] = acc
         logger.log(log_dict)
-                
         print(acc_dict)
 
     # save data
-    torch.save(acc_dict, os.path.join(FLAGS.log_dir, 'patch_shuffle_acc_dict'+FLAGS.suffix+'.pth'))
-    torchvision.utils.save_image(torch.stack(images_list, dim=0), os.path.join(FLAGS.log_dir, 'example_images'+FLAGS.suffix+'.png'), nrow=FLAGS.max_num_devide)
-    plot(csv_path=log_path, x='num_devide', y='accuracy', log_path=os.path.join(FLAGS.log_dir, 'plot.png'), save=True)
+    torch.save(acc_dict, os.path.join(FLAGS.log_dir, 'patch_shuffle_acc_dict' + FLAGS.suffix + '.pth'))
+    torchvision.utils.save_image(torch.stack(images_list, dim=0), os.path.join(FLAGS.log_dir, 'example_images' + FLAGS.suffix + '.png'), nrow=FLAGS.max_num_devide)
+    plot(csv_path=log_path, x='num_devide', y='accuracy', hue=None, log_path=os.path.join(FLAGS.log_dir, 'plot.png'), save=True)
+
 
 if __name__ == '__main__':
     main()
