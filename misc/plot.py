@@ -1,15 +1,15 @@
 import os
 import sys
 
+base = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../")
+sys.path.append(base)
+
 import click
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
 from misc.flag_holder import FlagHolder
-
-base = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../")
-sys.path.append(base)
 
 
 @click.command()
@@ -31,7 +31,7 @@ def main(**kwargs):
 
 def plot(**kwargs):
     # parse keyword arugments
-    required_kwargs = "x y log_path save".split()
+    required_kwargs = "x y hue log_path save".split()
     for required_kwarg in required_kwargs:
         if required_kwarg not in kwargs.keys():
             raise ValueError("invalid args")
