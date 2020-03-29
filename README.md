@@ -35,6 +35,29 @@ The saved image should be like follows.
 
 <img src="samples/patch_shuffle.png" height="300px">
 
+### Evaluating accuracy under Patch Shuffling
+
+The script `apps/eval_patch_shuffle.py` evaluates classification accuracy under Patch Shuffling.
+For example:
+
+```
+cd apps
+python eval_patch_shuffle.py -a resnet56 -w [WEIGHT_PATH]  -d cifar10 -l [LOG_DIR]
+```
+will log the result file under `LOGDIR/pathch_shuffle_result.csv`.
+
+In order to illustrate multiple results in sigle plot, `apps/plot_patch_shuffle.py`  is useful.
+For example:
+
+```
+cd apps
+python plot_patch_shuffle.py -t [TARGET_DIR] -l [DOG_DIR]  -s 
+```
+
+will load all csv files under `TARGET_DIR` and illustrate single plot under `LOG_DIR/plot_patch_shuffle.png`. The saved image should be like follows.
+
+<img src="samples/plot_patch_shuffle.png" height="300px">
+
 ### Masking
 
 coming soon
