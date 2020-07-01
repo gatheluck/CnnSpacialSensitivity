@@ -18,6 +18,7 @@ from misc.metric import get_num_correct
 from misc.model import ModelBuilder
 from misc.plot import plot
 from spatial_sensitivity.patch_shuffle import PatchShuffle
+from spatial_sensitivity.patch_shuffle import eval_patch_shuffle
 
 
 # options
@@ -49,12 +50,6 @@ def eval(**kwargs):
     os.makedirs(FLAGS.log_dir, exist_ok=True)
     FLAGS.dump(path=os.path.join(FLAGS.log_dir, 'flags{}.json'.format(FLAGS.suffix)))
 
-    assert FLAGS.max_num_devide >= 1
-
-    # logging
-    log_path = os.path.join(FLAGS.log_dir, os.path.join('pathch_shuffle_result' + FLAGS.suffix + '.csv'))
-    logger = Logger(path=log_path, mode='test')
-
     # dataset
     dataset_builder = DatasetBuilder(name=FLAGS.dataset, root_path=FLAGS.dataroot)
 
@@ -65,51 +60,7 @@ def eval(**kwargs):
     if torch.cuda.device_count() > 1:
         model = torch.nn.DataParallel(model)
 
-    # for logging
-    acc_dict = {}
-    images_list = []
-
-    for num_devide in tqdm.tqdm(range(1, FLAGS.max_num_devide + 1)):
-        log_dict = collections.OrderedDict()
-        for k, v in FLAGS._dict.items():
-            log_dict[k] = v
-
-        # build Patch Shuffled dataset
-        patch_shuffle_transform = PatchShuffle(num_devide, num_devide)
-        dataset = dataset_builder(train=False, normalize=True, optional_transform=[patch_shuffle_transform])
-        if FLAGS.num_samples != -1:
-            num_samples = min(FLAGS.num_samples, len(dataset))
-            indices = [i for i in range(num_samples)]
-            dataset = torch.utils.data.Subset(dataset, indices)
-        loader = torch.utils.data.DataLoader(dataset, batch_size=FLAGS.batch_size, shuffle=False, num_workers=FLAGS.num_workers, pin_memory=True)
-
-        with torch.autograd.no_grad():
-            num_correct = 0.0
-            for i, (x, t) in enumerate(loader):
-                model.eval()
-                x = x.to('cuda', non_blocking=True)
-                t = t.to('cuda', non_blocking=True)
-
-                model.zero_grad()
-                logit = model(x)
-                num_correct += get_num_correct(logit, t, topk=FLAGS.top_k)
-
-                if i == 0:
-                    images_list.append(x[10])
-
-        acc = num_correct / float(len(dataset))
-        key = '{num_devide}'.format(num_devide=num_devide)
-        acc_dict[key] = acc
-
-        log_dict['num_devide'] = num_devide
-        log_dict['accuracy'] = acc
-        logger.log(log_dict)
-        print(acc_dict)
-
-    # save data
-    torch.save(acc_dict, os.path.join(FLAGS.log_dir, 'patch_shuffle_acc_dict' + FLAGS.suffix + '.pth'))
-    torchvision.utils.save_image(torch.stack(images_list, dim=0), os.path.join(FLAGS.log_dir, 'example_images' + FLAGS.suffix + '.png'), nrow=FLAGS.max_num_devide)
-    plot(csv_path=log_path, x='num_devide', y='accuracy', hue=None, log_path=os.path.join(FLAGS.log_dir, 'plot.png'), save=True)
+    eval_patch_shuffle(model, dataset_builder, **FLAGS._dict)
 
 
 if __name__ == '__main__':
