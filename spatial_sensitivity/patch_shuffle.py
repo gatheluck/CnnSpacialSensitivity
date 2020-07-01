@@ -44,7 +44,7 @@ class PatchShuffle():
         return x
 
 
-def eval_patch_shuffle(model, dataset_builder, max_num_devide: int, num_samples: int, batch_size: int, num_workers: int, top_k: int, log_dir: str, suffix: str = '', **kwargs):
+def eval_patch_shuffle(model, dataset_builder, max_num_devide: int, num_samples: int, batch_size: int, num_workers: int, top_k: int, log_dir: str, suffix: str = '', shuffle: bool = False, **kwargs):
     """
     Args
     - model: NN model
@@ -56,6 +56,7 @@ def eval_patch_shuffle(model, dataset_builder, max_num_devide: int, num_samples:
     - top_k: use top_k accuracy
     - log_dir: log directory
     - suffix: suffix of log
+    - shuffle: shuffle data
     """
     assert max_num_devide >= 1
     assert num_samples >= 1 or num_samples == -1
@@ -79,7 +80,7 @@ def eval_patch_shuffle(model, dataset_builder, max_num_devide: int, num_samples:
             num_samples = min(num_samples, len(dataset))
             indices = [i for i in range(num_samples)]
             dataset = torch.utils.data.Subset(dataset, indices)
-        loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
+        loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers, pin_memory=True)
 
         with torch.autograd.no_grad():
             num_correct = 0.0
