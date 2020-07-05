@@ -44,7 +44,7 @@ class PatchShuffle():
         return x
 
 
-def eval_patch_shuffle(model, dataset_builder, max_num_devide: int, num_samples: int, batch_size: int, num_workers: int, top_k: int, log_dir: str, suffix: str = '', shuffle: bool = False, **kwargs):
+def eval_patch_shuffle(model, dataset_builder, max_num_devide: int, num_samples: int, batch_size: int, num_workers: int, top_k: int, log_dir: str, log_params: dict = {}, suffix: str = '', shuffle: bool = False, **kwargs):
     """
     Args
     - model: NN model
@@ -55,6 +55,7 @@ def eval_patch_shuffle(model, dataset_builder, max_num_devide: int, num_samples:
     - num_workers: number of workers
     - top_k: use top_k accuracy
     - log_dir: log directory
+    - log_params: params which is logged in dataframe. these params are useful for legend.
     - suffix: suffix of log
     - shuffle: shuffle data
     """
@@ -66,6 +67,9 @@ def eval_patch_shuffle(model, dataset_builder, max_num_devide: int, num_samples:
 
     log_path = os.path.join(log_dir, os.path.join('pathch_shuffle_result' + suffix + '.csv'))
     logger = Logger(path=log_path, mode='test')
+
+    # log params
+    logger.log(log_params)
 
     acc_dict = {}
     images_list = []
