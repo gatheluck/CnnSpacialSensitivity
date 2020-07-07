@@ -32,10 +32,13 @@ def plot_patch_shuffle(**kwargs):
     csv_paths = sorted(glob.glob(target_path, recursive=True))
 
     df = None
-    for csv_path in csv_paths:
+    for i, csv_path in enumerate(csv_paths):
         new_df = pd.read_csv(csv_path)
-        legend = os.path.basename(new_df['weight'][0]).rstrip('_model.pth')  # this operation is redandant for many users.
-        new_df['legend'] = legend
+        # legend = os.path.basename(new_df['weight'][0]).rstrip('_model.pth')  # this operation is redandant for many users.
+
+        # if there is no legend index in df, use index as legend.
+        if 'legend' not in new_df.columns.to_list():
+            new_df['legend'] = i
 
         if df is None:
             df = new_df
