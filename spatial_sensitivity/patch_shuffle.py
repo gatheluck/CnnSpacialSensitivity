@@ -69,7 +69,7 @@ def eval_patch_shuffle(model, dataset_builder, max_num_devide: int, num_samples:
     logger = Logger(path=log_path, mode='test')
 
     # log params
-    logger.log(log_params)
+    # logger.log(log_params)
 
     acc_dict = {}
     images_list = []
