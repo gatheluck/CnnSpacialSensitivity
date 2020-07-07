@@ -38,7 +38,7 @@ def plot_patch_shuffle(**kwargs):
 
         # if there is no legend index in df, use index as legend.
         if 'legend' not in new_df.columns.to_list():
-            new_df['legend'] = i
+            new_df['legend'] = str(i)
 
         if df is None:
             df = new_df
